@@ -16,6 +16,11 @@
 
 ```bash
 ./backup-gitlab.sh
+
+or
+
+# Ubuntu
+bash backup-gitlab.sh
 ```
 
 ### 3. cronジョブでの定期実行（オプション）
