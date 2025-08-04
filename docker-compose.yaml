@@ -4,7 +4,7 @@ services:
     restart: always
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://localhost:8080'
+        external_url 'http://localhost:3000'
         gitlab_rails['gitlab_shell_ssh_port'] = 2224
         nginx['listen_port'] = 80
         gitlab_rails['manage_backup_path'] = true
@@ -18,7 +18,7 @@ services:
         gitlab_rails['backup_cron_month'] = '*'
         gitlab_rails['backup_cron_weekday'] = '0'
     ports:
-      - '8080:80'
+      - '3000:80'
       - '2224:22'
     volumes:
       - './srv/gitlab/config:/etc/gitlab'
