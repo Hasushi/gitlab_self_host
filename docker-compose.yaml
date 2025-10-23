@@ -2,6 +2,15 @@ services:
   web:
     image: 'gitlab/gitlab-ce:latest'
     restart: always
+
+    mem_limit: 16g              # 上限（まずは 16GB 目安。ホストに合わせて調整）
+    mem_reservation: 4g        # 予約（ベースラインとして確保）
+    cpus: "4.0"                # CPU 上限（論理4 コアまで）
+    shm_size: "512m"           # 一時メモリ（Puma/ワーカーの一部で有効）
+    ulimits:
+      nofile: 131072           # 同時接続/ファイル数を確保
+      nproc:  32768
+
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://localhost:3000'
@@ -12,6 +21,31 @@ services:
         gitlab_rails['backup_path'] = '/var/opt/gitlab/backups'
         gitlab_rails['backup_archive_permissions'] = 0644
 
+        # Puma（Web）
+        puma['worker_processes'] = 2            # 物理/論理コアとメモリに合わせて（まずは2）
+        puma['min_threads'] = 4
+        puma['max_threads'] = 8                 # DBプールと合わせる（下の db_pool 参照）
+
+        # Sidekiq（ジョブ）
+        sidekiq['concurrency'] = 10             # ワーカー増やしすぎるとDB/メモリ圧迫
+
+        # DBコネクションプール（Puma + Sidekiq に見合う値に）
+        gitlab_rails['db_pool'] = 26            # 例：puma max_threads(8)×workers(2)=16 + sidekiq['concurrency'](10) 以上を満たす
+
+        # NGINX / Workhorse のタイムアウト（高負荷時の 502 回避）
+        nginx['proxy_read_timeout'] = 300       # 長めに
+        nginx['client_body_timeout'] = 60
+        gitlab_workhorse['proxy_read_timeout'] = 300
+
+        # Gitaly（リポ操作の同時実行・キュー）
+        gitaly['concurrency'] = [
+          { 'rpc' => '/gitaly.SmartHTTPService/PostUploadPack', 'max_per_repo' => 4, 'max_queue_size' => 64 },
+          { 'rpc' => '/gitaly.SSHService/SSHUploadPack',        'max_per_repo' => 4, 'max_queue_size' => 64 }
+        ]
+
+        # Prometheus を使うなら（負荷解析用）
+        prometheus['enable'] = true
+
     ports:
       - '3000:80'
       - '2224:22'
@@ -19,3 +53,9 @@ services:
       - './srv/gitlab/config:/etc/gitlab'
       - './srv/gitlab/logs:/var/log/gitlab'
       - './srv/gitlab/data:/var/opt/gitlab'
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/users/sign_in"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
