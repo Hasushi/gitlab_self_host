@@ -16,7 +16,7 @@ services:
         external_url '${GITLAB_EXTERNAL_URL}:${GITLAB_HTTP_PORT}'
         gitlab_rails['gitlab_shell_ssh_port'] = ${GITLAB_SSH_PORT}
         gitlab_rails['time_zone'] = 'Asia/Tokyo'
-        nginx['listen_port'] = 80
+        nginx['listen_port'] = ${GITLAB_INTERNAL_PORT}
         gitlab_rails['manage_backup_path'] = true
         gitlab_rails['backup_path'] = '/var/opt/gitlab/backups'
         gitlab_rails['backup_archive_permissions'] = 0644
@@ -47,7 +47,7 @@ services:
         prometheus['enable'] = true
 
     ports:
-      - '${GITLAB_HTTP_PORT}:80'
+      - '${GITLAB_HTTP_PORT}:${GITLAB_INTERNAL_PORT}'
       - '${GITLAB_SSH_PORT}:22'
     volumes:
       - './srv/gitlab/config:/etc/gitlab'
@@ -55,7 +55,7 @@ services:
       - './srv/gitlab/data:/var/opt/gitlab'
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "${GITLAB_EXTERNAL_URL}:${GITLAB_HTTP_PORT}/users/sign_in"]
+      test: ["CMD", "curl", "-f", "${GITLAB_EXTERNAL_URL}:${GITLAB_INTERNAL_PORT}/users/sign_in"]
       interval: 30s
       timeout: 10s
       retries: 5
