@@ -1,6 +1,6 @@
 services:
   web:
-    image: 'gitlab/gitlab-ce:18.5.1-ce.0'   # または gitlab/gitlab-ce:latest
+    image: 'gitlab/gitlab-ce:18.1.0-ce.0'   # または gitlab/gitlab-ce:latest
     restart: always
 
     mem_limit: 16g              # 上限（まずは 16GB 目安。ホストに合わせて調整）
