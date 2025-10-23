@@ -1,6 +1,6 @@
 services:
   web:
-    image: 'gitlab/gitlab-ce:latest'
+    image: 'gitlab/gitlab-ce:latest'   # または gitlab/gitlab-ce:latest
     restart: always
 
     mem_limit: 16g              # 上限（まずは 16GB 目安。ホストに合わせて調整）
@@ -13,8 +13,8 @@ services:
 
     environment:
       GITLAB_OMNIBUS_CONFIG: |
-        external_url 'http://localhost:3000'
-        gitlab_rails['gitlab_shell_ssh_port'] = 2224
+        external_url '${GITLAB_EXTERNAL_URL}:${GITLAB_HTTP_PORT}'
+        gitlab_rails['gitlab_shell_ssh_port'] = ${GITLAB_SSH_PORT}
         gitlab_rails['time_zone'] = 'Asia/Tokyo'
         nginx['listen_port'] = 80
         gitlab_rails['manage_backup_path'] = true
@@ -47,8 +47,8 @@ services:
         prometheus['enable'] = true
 
     ports:
-      - '3000:80'
-      - '2224:22'
+      - '${GITLAB_HTTP_PORT}:80'
+      - '${GITLAB_SSH_PORT}:22'
     volumes:
       - './srv/gitlab/config:/etc/gitlab'
       - './srv/gitlab/logs:/var/log/gitlab'
