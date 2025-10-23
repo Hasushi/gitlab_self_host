@@ -55,7 +55,7 @@ services:
       - './srv/gitlab/data:/var/opt/gitlab'
 
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/users/sign_in"]
+      test: ["CMD", "curl", "-f", "${GITLAB_EXTERNAL_URL}:80/users/sign_in"]
       interval: 30s
       timeout: 10s
       retries: 5
