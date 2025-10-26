@@ -20,6 +20,13 @@ services:
         gitlab_rails['manage_backup_path'] = true
         gitlab_rails['backup_path'] = '/var/opt/gitlab/backups'
         gitlab_rails['backup_archive_permissions'] = 0644
+        gitlab_rails['backup_keep_time'] = 604800
+        gitlab_rails['backup_cron_enable'] = true
+        gitlab_rails['backup_cron_minute'] = '0'
+        gitlab_rails['backup_cron_hour'] = '2'
+        gitlab_rails['backup_cron_day'] = '*'
+        gitlab_rails['backup_cron_month'] = '*'
+        gitlab_rails['backup_cron_weekday'] = '0'
 
         # Puma（Web）
         puma['worker_processes'] = 2            # 物理/論理コアとメモリに合わせて（まずは2）
